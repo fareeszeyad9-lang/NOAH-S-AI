@@ -1,0 +1,1 @@
+ALTER TABLE memories ADD COLUMN tag TEXT NOT NULL DEFAULT 'general';

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1020" />
+    <title>NOAH'S — Multi-AI Orchestrator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="login-screen" id="loginScreen" hidden>
+      <div class="login-card">
+        <p class="eyebrow">NOAH'S</p>
+        <h1>Masuk ke workspace pribadi.</h1>
+        <p>Google dipakai untuk akun NOAH'S kamu dan (opsional) kunci Gemini — bukan untuk Copilot atau Devin.</p>
+        <div id="googleButton" class="google-slot"></div>
+        <button type="button" class="primary" id="localOwnerBtn" hidden>Lanjut sebagai pemilik lokal</button>
+        <small id="loginHint">Set GOOGLE_CLIENT_ID di <code>.env</code> untuk Masuk dengan Google.</small>
+      </div>
+    </div>
+
+    <div class="loading-screen" id="loadingScreen" hidden>
+      <div class="loading-flash" id="loadingFlash"></div>
+      <p class="loading-title">NOAH'S</p>
+      <div class="noah-cube" id="noahCube">
+        <div class="cube-face f1">N</div>
+        <div class="cube-face f2">O</div>
+        <div class="cube-face f3">A</div>
+        <div class="cube-face f4">H</div>
+        <div class="cube-face f5">'</div>
+        <div class="cube-face f6">S</div>
+      </div>
+    </div>
+
+    <div class="offline-overlay" id="offlineOverlay" hidden>
+      <div>
+        <h1>NOAH'S OFFLINE</h1>
+        <p>Assistant dimatikan. Kamu tetap login. Tutup overlay ini secara manual.</p>
+        <button type="button" class="primary" id="closeOfflineOverlay">Tutup overlay</button>
+      </div>
+    </div>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navigasi utama">
+        <a class="brand" href="#dashboard" aria-label="NOAH'S Dashboard">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>NOAH'S</span>
+        </a>
+
+        <div class="workspace-switcher" title="Multi-workspace belum tersedia">
+          <span class="workspace-orb"></span>
+          <div>
+            <strong>Workspace pribadi</strong>
+            <small>Single workspace</small>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <p class="section-label"><span>WORKSPACE</span></p>
+          <a class="nav-item active" data-view="dashboard" href="#dashboard"><span>⌘</span>Ringkasan</a>
+          <a class="nav-item" data-view="picker" href="#picker"><span>✦</span>Pilih AI</a>
+          <a class="nav-item" data-view="sessions" href="#sessions"><span>◷</span>Percakapan</a>
+          <a class="nav-item" data-view="projects" href="#projects"><span>▣</span>Koleksi <b id="projectCount">3</b></a>
+          <a class="nav-item" data-view="files" href="#files"><span>▣</span>Files</a>
+          <a class="nav-item" data-view="memory" href="#memory"><span>◫</span>Memory</a>
+          <a class="nav-item" data-view="providers" href="#providers"><span>✦</span>Providers</a>
+        </nav>
+
+        <div class="sidebar-projects" id="sidebarProjects">
+          <div class="section-label"><span>RECENT PROJECTS</span><button id="newProjectBtn" title="Buat project baru">+</button></div>
+          <button class="project-link selected" data-project="ai-hub"><i class="dot violet"></i><span>AI Learning Hub</span></button>
+          <button class="project-link" data-project="portfolio"><i class="dot teal"></i><span>Portfolio Website</span></button>
+          <button class="project-link" data-project="inventory"><i class="dot amber"></i><span>Inventory App</span></button>
+        </div>
+
+        <div class="sidebar-bottom">
+          <button class="nav-item settings" data-view="settings"><span>⚙</span>Pengaturan</button>
+          <div class="profile">
+            <div class="avatar" id="profileAvatar">FZ</div>
+            <div><strong id="profileName">Farees</strong><small>Builder level</small></div>
+            <button type="button" id="profileMenuBtn" title="Profil">•••</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="mobile-menu" aria-label="Buka menu">☰</button>
+          <div class="breadcrumbs"><span id="breadcrumbRoot">Workspace pribadi</span><b>/</b><strong id="breadcrumbProject">AI Learning Hub</strong></div>
+          <div class="topbar-actions">
+            <button class="quiet-button" id="shortcutsBtn">⌘ K</button>
+            <button class="icon-button" id="notifyBtn" title="Notifikasi">♢<i id="notifyDot"></i></button>
+            <button class="help-button" id="helpBtn">Panduan</button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboardView">
+          <div class="hero-row">
+            <div>
+              <p class="eyebrow" id="statusEyebrow"><span class="live-dot" id="liveDot"></span> <span id="statusLabel">NOAH'S ONLINE</span> <button type="button" id="masterPowerBtn" class="power-btn" title="NOAH'S online/offline">⏻</button></p>
+              <h1>Build something you’ll <em>understand.</em></h1>
+              <p class="hero-copy">Satu workspace untuk merencanakan, membangun, belajar, dan mengingat keputusan penting Anda.</p>
+            </div>
+            <div class="channel-strip" aria-label="Status channel">
+              <button class="channel active" title="Web Dashboard aktif"><span class="channel-icon">◈</span><span><b>Dashboard</b><small>Active</small></span></button>
+              <button class="channel" data-channel="Discord"><span class="channel-icon">◉</span><span><b>Discord</b><small>Not connected</small></span></button>
+              <button class="channel" data-channel="WhatsApp"><span class="channel-icon">◌</span><span><b>WhatsApp</b><small>Not connected</small></span></button>
+            </div>
+          </div>
+
+          <section class="summary-grid" aria-label="Ringkasan workspace">
+            <article class="stat-card mode-card">
+              <div class="stat-top"><span>ACTIVE MODE</span><button id="changeMode">Change</button></div>
+              <div class="stat-value"><span class="mode-glyph" id="modeGlyph">◈</span><strong id="activeModeName">Alien Combination</strong></div>
+              <p id="modeDescription">Build with context and learn along the way.</p>
+            </article>
+            <article class="stat-card project-stat" id="projectStatCard" role="button" tabindex="0">
+              <div class="stat-top"><span>PROJECT</span><span class="status-chip teal">IN PROGRESS</span></div>
+              <div class="stat-value"><span class="project-glyph">⌘</span><strong id="activeProjectName">AI Learning Hub</strong></div>
+              <p><b id="projectProgress">68%</b> complete · 2 tasks remaining</p>
+              <div class="progress-track"><i id="progressBar" style="width:68%"></i></div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span>ACTIVE MODEL</span><span class="status-chip neutral" id="activeModelChip">SIMULASI</span></div>
+              <div class="stat-value"><span class="provider-glyph">✦</span><strong id="activeModelName">DeepSeek AI</strong></div>
+              <p id="activeModelHint"><span class="tiny-dot amber"></span> API key required · mock replies only</p>
+            </article>
+            <article class="stat-card approvals-card">
+              <div class="stat-top"><span>APPROVALS</span><button id="reviewApprovals">Review</button></div>
+              <div class="stat-value"><strong id="approvalCount">1</strong><span class="approval-copy">action waiting<br />for your review</span></div>
+              <p>Workspace access is <b>read-only</b>.</p>
+            </article>
+          </section>
+
+          <section class="work-grid">
+            <article class="panel conversation-panel">
+              <div class="panel-heading">
+                <div><p class="panel-kicker">CURRENT SESSION</p><h2>Ship a beginner-friendly MVP</h2></div>
+                <div class="session-actions">
+                  <div class="layout-switch" role="group" aria-label="Tata letak">
+                    <button type="button" id="layoutHome" class="active">Home</button>
+                    <button type="button" id="layoutChat">Chat</button>
+                  </div>
+                  <button type="button" id="cubeToggle" title="Sembunyikan/tampilkan kubus">▣</button>
+                  <button id="resumeBtn">Resume</button>
+                  <button class="more-button" id="sessionMore" type="button">•••</button>
+                </div>
+              </div>
+              <div class="chat-cube-wrap" id="chatCubeWrap">
+                <div class="noah-cube chat-cube" id="chatCube">
+                  <button type="button" class="cube-face f1" data-face="1">N</button>
+                  <button type="button" class="cube-face f2" data-face="2">O</button>
+                  <button type="button" class="cube-face f3" data-face="3">A</button>
+                  <button type="button" class="cube-face f4" data-face="4">H</button>
+                  <button type="button" class="cube-face f5" data-face="5">'</button>
+                  <button type="button" class="cube-face f6" data-face="6">S</button>
+                </div>
+              </div>
+
+              <div class="mode-selector" id="modeSelector" aria-label="Pilih mode"></div>
+              <div class="model-selector" id="modelSelector" role="radiogroup" aria-label="Pilih model AI"></div>
+              <p class="cost-note" id="costNote" hidden>Gabungan memanggil hingga 4 model sekaligus (biaya lebih tinggi kalau LIVE). Teamwork coding agent menambah instruksi terpisah — tetap tidak mengeksekusi file.</p>
+              <p class="composer-note learning-banner" id="learningBanner" hidden>Learning mode: hanya menjelaskan — tidak ada file atau approval yang dibuat.</p>
+              <div class="chat-tools"><button type="button" id="zoomOut" title="Perkecil teks">A-</button><button type="button" id="zoomIn" title="Perbesar teks">A+</button></div>
+              <div class="chat-window" id="chatWindow" aria-live="polite"></div>
+
+              <div class="suggestion-row" id="suggestionRow">
+                <button data-prompt="Buatkan rencana MVP 2 minggu">Rencana MVP 2 minggu</button>
+                <button data-prompt="Jelaskan arsitektur yang sederhana">Jelaskan arsitektur</button>
+                <button data-prompt="Apa risiko terbesar dari ide ini?">Cari risiko</button>
+              </div>
+              <div class="attach-preview" id="attachPreview"></div>
+              <form class="chat-composer" id="chatForm">
+                <input id="fileInput" type="file" accept="image/*,.pdf,.txt,.md,.docx" multiple hidden />
+                <button type="button" class="attach-btn" id="attachBtn" title="Lampirkan file">＋</button>
+                <button type="button" class="attach-btn" id="micBtn" title="Suara ke teks">◉</button>
+                <textarea id="chatInput" rows="1" placeholder="Tulis pesan atau pilih action di atas…" aria-label="Pesan"></textarea>
+                <div class="reply-mini" id="replyMini"></div>
+                <button class="send-btn" type="submit" aria-label="Kirim pesan">↑</button>
+              </form>
+              <p class="composer-note">NOAH'S will save only useful, non-sensitive project context.</p>
+            </article>
+
+            <aside class="right-rail">
+              <article class="panel orchestrator-panel">
+                <div class="panel-heading compact"><div><p class="panel-kicker">TASK ROUTER</p><h2>How this task will run</h2></div></div>
+                <div class="route-flow" id="routeFlow"></div>
+                <button class="outline-action" id="showRouting">View routing details <span>→</span></button>
+              </article>
+
+              <article class="panel provider-panel">
+                <div class="panel-heading compact"><div><p class="panel-kicker">AI MODEL</p><h2>Capability, not assumptions.</h2></div><button id="providerSettings" class="link-button">Manage</button></div>
+                <div class="provider-list" id="providerList"></div>
+              </article>
+
+              <article class="panel memory-panel">
+                <div class="memory-top"><div><p class="panel-kicker">PROJECT MEMORY</p><h2>Latest useful context</h2></div><button class="link-button" data-view="memory">View all</button></div>
+                <div class="memory-note"><span class="memory-icon">✧</span><p><b>Decision saved</b><br /><span id="latestMemory">Start with a manual onboarding flow before automating integrations.</span></p></div>
+              </article>
+            </aside>
+          </section>
+
+          <section class="lower-grid">
+            <article class="panel tasks-panel">
+              <div class="panel-heading compact"><div><p class="panel-kicker">NEXT ACTIONS</p><h2>Keep momentum, not noise.</h2></div><button id="addTask" class="round-add" title="Tambah task">+</button></div>
+              <div class="task-list" id="taskList"></div>
+            </article>
+            <article class="panel approval-panel" id="approvalPanel">
+              <div class="approval-visual"><span>⇄</span></div>
+              <div><p class="panel-kicker">REVIEW READY</p><h2>Workspace changes need your approval.</h2><p>Cursor proposes a read-only project inspection before it recommends any file edits.</p></div>
+              <div class="approval-actions"><button class="secondary" id="inspectChanges">Review</button><button class="primary" id="approveChanges">Approve</button></div>
+            </article>
+          </section>
+        </section>
+
+        <section class="view picker-view" id="pickerView">
+          <header class="picker-top">
+            <p class="eyebrow">01 / PILIH AI — 02 / MULAI WORKSPACE</p>
+            <h1>AI LIST</h1>
+            <p>Pilih bintang yang sesuai kebutuhanmu. Satu workspace, berbagai kemungkinan.</p>
+          </header>
+          <div class="picker-shell">
+            <div class="picker-main">
+              <div class="picker-search-row">
+                <label class="picker-search">
+                  <input id="pickerSearch" type="search" placeholder="Cari model atau tool…" aria-label="Cari model" />
+                  <kbd>⌘ K</kbd>
+                </label>
+                <span class="picker-meta" id="pickerMeta">19 AI · 6 kategori</span>
+                <button type="button" id="pickerSelectAll" title="Pilih rasi default">Rasi bintang</button>
+                <button type="button" id="pickerLayoutBtn" class="picker-layout-btn" title="Tampilan daftar">☰</button>
+              </div>
+              <div class="picker-grid" id="pickerGrid"></div>
+              <p class="picker-legend"><i class="legend on"></i> Dipilih <i class="legend"></i> Belum dipilih</p>
+            </div>
+            <aside class="picker-rail" id="pickerRail"></aside>
+          </div>
+        </section>
+        <section class="view placeholder-view" id="sessionsView"><p class="eyebrow">SESSION HISTORY</p><h1>Your context, ready to resume.</h1><div id="sessionsContent" class="content-card"></div></section>
+        <section class="view placeholder-view" id="projectsView"><p class="eyebrow">PROJECT PORTFOLIO</p><h1>Work is clearer when it has a home.</h1><div id="projectsContent" class="content-card"></div></section>
+        <section class="view placeholder-view" id="filesView"><p class="eyebrow">FILE LIBRARY</p><h1>Penting di atas. Sisanya tetap terurut.</h1><div id="filesContent" class="content-card"></div></section>
+        <section class="view placeholder-view" id="memoryView"><p class="eyebrow">LONG-TERM MEMORY</p><h1>Useful facts. Nothing more.</h1><div id="memoryContent" class="content-card"></div></section>
+        <section class="view placeholder-view" id="providersView"><p class="eyebrow">PROVIDER REGISTRY</p><h1>Choose by real capability.</h1><div id="providersContent" class="content-card"></div></section>
+        <section class="view placeholder-view" id="settingsView"><p class="eyebrow">WORKSPACE SETTINGS</p><h1>Control what NOAH'S can remember and do.</h1><div id="settingsContent" class="content-card"></div></section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+      <section class="modal" id="appModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalClose" aria-label="Tutup">×</button>
+        <div id="modalContent"></div>
+      </section>
+    </div>
+    <div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt="" /><button type="button" id="lightboxClose">Tutup</button></div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="catalog.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN last_greeting_index INTEGER NOT NULL DEFAULT 0;
